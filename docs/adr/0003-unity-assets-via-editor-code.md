@@ -1,6 +1,6 @@
 # ADR-0003: Unity 직렬화 에셋은 에디터 코드로 만든다
 
-- 상태: 채택 (2026-11-20, Project-Soul에서 이어받음)
+- 상태: 채택 (2026-11-20, 칠석 하네스에 승계)
 
 ## 맥락
 씬·프리팹·애니메이터·Timeline·ScriptableObject·머티리얼·`.meta`는 Unity가 관리하는 YAML이다. AI가 텍스트로 고치면 GUID·fileID가 깨지거나 Unity와 충돌하기 쉽다.

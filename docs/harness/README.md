@@ -20,7 +20,7 @@
 
 ## Claude Code 하네스에서 Codex로 옮긴 이유와 바뀐 점
 
-프로젝트에서 쓰는 Codex CLI가 저장소의 지침과 검증 절차를 직접 읽도록 Project-Soul에서 이어받은 하네스를 이전했다. 구간 설계는 `$new-zone`으로 초안 → 솔버 → 사람 선택 순서를 따르고, 시네마틱 컷은 `$cinematic-cut`으로 준비한다. 품질 게이트는 `UNITY_EDITOR_PATH` 또는 Unity Hub 기본 경로에서 에디터를 찾는다.
+Codex CLI가 칠석 저장소의 지침과 검증 절차를 직접 읽도록 기존 하네스를 칠석에 맞게 옮겼다. 구간 설계는 `$new-zone`으로 초안 → 솔버 → 사람 선택 순서를 따르고, 시네마틱 컷은 `$cinematic-cut`으로 준비한다. 품질 게이트는 `UNITY_EDITOR_PATH` 또는 Unity Hub 기본 경로에서 에디터를 찾는다.
 
 - Codex는 시작 디렉터리까지 경로상 지침을 읽는다. 레포 루트에서 작업할 때는 루트 지침에 나열된 대상 폴더의 `AGENTS.md`도 직접 읽는다.
 - 스킬은 프롬프트에 `$스킬이름`과 인자를 적어 호출한다. 각 스킬의 `agents/openai.yaml`에서 자동 호출을 끈다.
