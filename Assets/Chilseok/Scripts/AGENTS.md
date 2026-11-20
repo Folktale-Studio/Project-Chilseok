@@ -13,4 +13,4 @@
 - 게임플레이 입력은 `PlayerInputReader`를 통해서만 읽는다. 다른 스크립트가 `Keyboard.current` 등 장치를 직접 읽지 않는다.
 - 이벤트는 `event Action`을 쓰고, 구독한 쪽이 `OnDisable`/`OnDestroy`에서 해제한다.
 - 애니메이터 상태·파라미터 이름은 `const string` 상수로 두고, 에디터 메뉴와 같은 상수를 공유한다.
-- 런타임 코드에서 `UnityEditor`를 참조하지 않는다. 필요하면 `#if UNITY_EDITOR`로 감싼다. WebGL 빌드가 깨지지 않는지 생각한다(스레드, 파일 IO 금지).
+- 런타임 코드에서 `UnityEditor`를 참조하지 않는다. 필요하면 `#if UNITY_EDITOR`로 감싼다. Windows 플레이어 빌드에서도 동작하는지 확인한다.

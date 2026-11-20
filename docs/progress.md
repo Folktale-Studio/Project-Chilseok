@@ -6,7 +6,7 @@
 ## Phase 0 — 환경 (11/20, 사람 중심)
 - [ ] Unity 6 (6000.3) URP 프로젝트를 이 레포 루트에 생성
 - [ ] 패키지 설치: Input System, Test Framework, Timeline, 2D Animation, (선택) Cinemachine
-- [ ] Build Settings → WebGL 전환, Player → Active Input Handling = Input System
+- [ ] File → Build Profiles에서 Windows(64비트) 활성화, Player → Active Input Handling = Input System
 - [ ] 폴더·asmdef·빈 씬 생성 (AI: 에디터 메뉴 `Tools/Chilseok/0. Setup Project` 작성 → 사람: 실행)
 - [ ] `tools/harness/quality-gate.ps1 -Checks compile` PASS
 - [ ] `design/game-design.md` 내보내기(원본 문서 → Markdown)
@@ -22,8 +22,8 @@
 
 ## Phase 2 — 디더 렌더 (11/21, Phase 1과 병렬 가능)
 - [ ] `DitherRenderFeature` + `DitherSettings`(밝기, 디졸브, 반전, 해상도, 보일링)
-- [ ] 큐브 몇 개 씬에서 디더 화면 캡처, WebGL에서 확인
-- 완료 기준: 에디터·WebGL 모두 디더 화면 스크린샷
+- [ ] 큐브 몇 개 씬에서 디더 화면 캡처, Windows 실행 빌드에서 확인
+- 완료 기준: 에디터와 Windows 실행 빌드의 디더 화면 스크린샷
 
 ## Phase 3 — 플레이어와 카메라 (11/22)
 - [ ] `PlayerInputReader`, `PlayerController2D`(투영 맵 위 이동·점프·코요테·리셋)
@@ -51,9 +51,9 @@
 ## Phase 7 — QA·빌드·README (11/23)
 - [ ] `$team-qa`로 핵심 이슈 QA, 열린 S1/S2 없음
 - [ ] 테스트 1~3명, `$playtest-report`, 조정
-- [ ] WebGL 빌드 → itch.io
+- [ ] Windows PC(x86-64) 빌드 폴더를 ZIP으로 묶고, 압축을 풀어 실행을 확인한 뒤 itch.io에 Windows 다운로드로 올린다
 - [ ] README: 게임 소개, AI·사람 역할 분담표, 하네스 구조, 구간 지표·비교표
-- 완료 기준: itch.io 링크, README 완성
+- 완료 기준: 실행을 확인한 Windows 빌드의 itch.io 다운로드 링크, README 완성
 
 ## Phase 8 — 제출 (11/24)
 - [ ] 지원서 작성·제출 (23:59 전)
