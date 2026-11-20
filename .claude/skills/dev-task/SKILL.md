@@ -1,0 +1,15 @@
+---
+name: dev-task
+description: "기능 하나를 계획 → 승인 → 구현 → 품질 게이트 순서로 처리한다."
+argument-hint: "<작업 설명 또는 design/ 노트 경로 또는 progress.md 단계 이름>"
+disable-model-invocation: true
+---
+
+`$ARGUMENTS` 작업을 처리한다. 메인 세션에서 직접 한다. 여러 파일에 걸친 큰 구현은 `gameplay-programmer`, 셰이더·Timeline·임포트는 `unity-specialist`에게 맡길 수 있다.
+
+1. **파악**: `docs/progress.md`에서 이 작업이 속한 단계를 찾고, 관련 기획 노트(`design/`)와 코드를 필요한 부분만 읽는다.
+2. **계획**: 바꿀 파일 목록, 새 클래스의 목적·관계(합성/집약)·근거, 테스트 계획(EditMode 테스트 이름), 모르는 점을 짧게 제시하고 승인을 받는다.
+3. **구현**: 승인된 범위만 수정한다. 순수 로직은 테스트와 함께 쓴다. 범위 밖 문제는 "후속 작업"으로 적기만 한다.
+4. **검증**: `unity-quality-gate`를 실행한다. INCOMPLETE면 이유와 사람이 할 일을 적는다. 가능하면 사람에게 Play 모드 확인을 요청한다.
+5. **기록**: `docs/progress.md`의 해당 항목을 갱신하고, "AI가 한 일 / 사람이 한 일"을 한 줄씩 남긴다.
+6. **보고**: 변경 파일, Unity에서 사용자가 할 일(메뉴 실행 등), 게이트 결과, 미검증 항목.
