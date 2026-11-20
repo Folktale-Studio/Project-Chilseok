@@ -5,7 +5,7 @@
 
 - 엔진: Unity 6 (6000.3) / URP 17 / 새 Input System / Windows PC(x86-64) 빌드
 - 기간: 2026-11-20 ~ 11-24 (넷마블네오 AI 인턴십 지원작). 마감 11/24 23:59
-- 기획 원문: `design/game-design.md` (원본 문서에서 내보낸 사본). 핵심 규칙은 `design/perspective-core.md`
+- 기획 기준 문서는 레포의 `design/`에 둔다. 전체 기획은 `design/game-design.md`, 핵심 규칙은 `design/perspective-core.md`를 따른다.
 - 진행 상황: `docs/progress.md` — 세션을 시작하면 먼저 읽고, 끝낼 때 갱신한다
 
 ## 절대 규칙
@@ -20,6 +20,18 @@
 7. `Assets/ThirdParty/`, `Packages/`, `ProjectSettings/`, `Library/`, `UserSettings/`, `Temp/`의 파일을 직접 편집·생성·삭제하지 않는다.
 8. **모든 도구에서 `.env*` 읽기와 파괴적 명령 실행을 금지한다.** `rm -rf`, 재귀 `Remove-Item`, 강제 `git push`, `git reset --hard`, 강제 `git clean`을 실행하지 않는다.
 9. **하네스를 편집·생성·삭제하기 전에 사람의 명시적 승인을 받는다.** 모든 `AGENTS.md`, `.agents/`, `.codex/`에 적용한다.
+
+## 기획 변경 관리
+
+기획이 바뀌면 다음 순서로 반영한다.
+
+1. 레포의 `design/`에서 관련 문서를 갱신한다.
+2. `design/decisions.md`에 날짜, 변경 사항, 이유, 영향을 한 줄로 기록한다.
+3. 영향받는 GitHub 이슈를 수정·추가·닫는다. `not planned`로 닫는 이슈에는 이유를 기록한다.
+4. `docs/progress.md`를 갱신한다.
+
+- 구조에 미치는 영향이 크면 `docs/adr/`에 ADR을 추가한다.
+- 수치만 바뀌면 해당 작업의 PR에서 `design/perspective-core.md`의 수치 표도 함께 갱신한다.
 
 ## 구조
 
