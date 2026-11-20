@@ -9,7 +9,7 @@
 - [ ] Build Settings → WebGL 전환, Player → Active Input Handling = Input System
 - [ ] 폴더·asmdef·빈 씬 생성 (AI: 에디터 메뉴 `Tools/Chilseok/0. Setup Project` 작성 → 사람: 실행)
 - [ ] `tools/harness/quality-gate.ps1 -Checks compile` PASS
-- [ ] `design/game-design.md` 내보내기(Claude 문서 → Markdown)
+- [ ] `design/game-design.md` 내보내기(원본 문서 → Markdown)
 - 완료 기준: 빈 프로젝트에서 게이트 compile·editmode PASS(0 tests)
 
 ## Phase 1 — 퍼즐 코어 (11/21)
@@ -33,7 +33,7 @@
 - 완료 기준: zone-02를 손으로 클리어
 
 ## Phase 4 — 구간 6개와 흐름 (11/22)
-- [ ] `/new-zone`으로 구간 1~6 (초안 → 솔버 → 사람 선택)
+- [ ] `$new-zone`으로 구간 1~6 (초안 → 솔버 → 사람 선택)
 - [ ] `LevelFlow`: 까치 도착, 내레이션 한 줄, 다음 구간 안내, 클리어 로그
 - [ ] `production/metrics/zones.md` 지표 표
 - 완료 기준: 여정을 처음부터 끝까지 플레이 가능
@@ -44,13 +44,13 @@
 - 완료 기준: 디더 화면에서 30px 견우의 삿갓 실루엣이 읽힌다
 
 ## Phase 6 — 도입 시네마틱 (11/22 그림, 11/23 오전 구현)
-- [ ] 필수 컷 1·4·6 (`/cinematic-cut`)
+- [ ] 필수 컷 1·4·6 (`$cinematic-cut`)
 - [ ] 추천 컷 5(달 순환), 있으면 좋음 2·3
 - 완료 기준: 시네마틱 → 디더 디졸브 → 첫 구간으로 끊김 없이 이어진다
 
 ## Phase 7 — QA·빌드·README (11/23)
-- [ ] `/team-qa`로 핵심 이슈 QA, 열린 S1/S2 없음
-- [ ] 테스트 1~3명, `/playtest-report`, 조정
+- [ ] `$team-qa`로 핵심 이슈 QA, 열린 S1/S2 없음
+- [ ] 테스트 1~3명, `$playtest-report`, 조정
 - [ ] WebGL 빌드 → itch.io
 - [ ] README: 게임 소개, AI·사람 역할 분담표, 하네스 구조, 구간 지표·비교표
 - 완료 기준: itch.io 링크, README 완성
@@ -62,3 +62,4 @@
 | 날짜 | 단계 | AI가 한 일 | 사람이 한 일 |
 | --- | --- | --- | --- |
 | 11/20 | 기획 | 장르·컨셉 선택지, 기획안, 목업, 하네스 이식 | 장르·컨셉·연출 방향 결정, 캐릭터 시안 생성 |
+| 11/20 | 하네스를 Codex로 이전 | 변환 | 방향 결정·검토 |

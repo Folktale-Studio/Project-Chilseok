@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/session-start.ps1\"",
+            "commandWindows": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/session-start.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Loading Chilseok project status"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/protect-files.ps1\"",
+            "commandWindows": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/protect-files.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Checking Chilseok protected paths"
+          }
+        ]
+      }
+    ]
+  }
+}

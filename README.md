@@ -9,6 +9,6 @@
 - 조작: A/D 이동, Space 점프, Q/E 시점 회전, R 다시 시작
 
 ## 만든 방식
-- AI와 사람의 역할 분담: `CLAUDE.md`의 역할 표, `docs/progress.md` 기록
+- AI와 사람의 역할 분담: `AGENTS.md`의 역할 표, `docs/progress.md` 기록
 - 하네스: `docs/harness/README.md`
 - 구간 지표: `production/metrics/zones.md`

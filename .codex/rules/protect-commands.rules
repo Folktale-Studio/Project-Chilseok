@@ -1,0 +1,6 @@
+# Exact command prefixes. AGENTS.md also covers reordered flags and shell scripts.
+prefix_rule(pattern = ["rm", ["-rf", "-fr"]], decision = "forbidden")
+prefix_rule(pattern = [["git", "git.exe"], "push", ["--force", "-f", "--force-with-lease", "--force-if-includes"]], decision = "forbidden")
+prefix_rule(pattern = [["git", "git.exe"], "reset", "--hard"], decision = "forbidden")
+prefix_rule(pattern = [["git", "git.exe"], "clean", ["-f", "-ff", "-fd", "-df", "-fx", "-xf", "-fdx", "-xdf", "--force"]], decision = "forbidden")
+prefix_rule(pattern = [["Remove-Item", "remove-item"], ["-Recurse", "-recurse"]], decision = "forbidden")

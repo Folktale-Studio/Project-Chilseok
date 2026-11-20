@@ -1,0 +1,17 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+approval_policy = "on-request"
+default_permissions = "chilseok-workspace"
+
+[permissions.chilseok-workspace]
+extends = ":workspace"
+
+[permissions.chilseok-workspace.filesystem]
+glob_scan_max_depth = 8
+
+[permissions.chilseok-workspace.filesystem.":workspace_roots"]
+".env*" = "deny"
+"**/.env*" = "deny"
+"Assets/ThirdParty" = "read"
+"Packages" = "read"
+"ProjectSettings" = "read"
