@@ -26,7 +26,7 @@
 기획이 바뀌면 다음 순서로 반영한다.
 
 1. 레포의 `design/`에서 관련 문서를 갱신한다.
-2. `design/decisions.md`에 날짜, 변경 사항, 이유, 영향을 한 줄로 기록한다.
+2. `design/decisions.md`에 날짜, 변경 사항, 이유, 영향을 한 줄로 기록한다. 포트폴리오에도 남길 결정은 `$notion-log`를 따라 Notion 결정 로그에 반영한다.
 3. 영향받는 GitHub 이슈를 수정·추가·닫는다. `not planned`로 닫는 이슈에는 이유를 기록한다.
 4. `docs/progress.md`를 갱신한다.
 
@@ -73,6 +73,12 @@ tools/harness/        quality-gate.ps1
 | Unity 에디터 조작 | 패키지 설치, 메뉴 실행, 인스펙터 값 | 메뉴 스크립트 작성, 바꿀 값 안내 |
 
 AI가 한 일과 사람이 고친 일은 커밋 메시지와 `docs/progress.md`에 남긴다. README의 "AI 활용" 절이 여기서 나온다.
+
+## 포트폴리오 기록
+
+기록은 레포가 원본이며, Notion은 포트폴리오 정리본이다. AI 작업은 `production/ai-log.md`에, 기획 결정은 `design/decisions.md`에 남기고 `$notion-log`로 반영한다. 사람의 판단은 채팅에서 확인한 발언에 근거한다.
+
+[Notion 포트폴리오 허브](https://app.notion.com/p/41e498d79c6881f6829de517ffb00f99) · [Codex 기록 규칙](https://app.notion.com/p/41e498d79c6881769c1cdbca957a3e99)
 
 ## 자주 쓰는 것
 
