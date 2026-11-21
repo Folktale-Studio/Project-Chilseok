@@ -1,0 +1,10 @@
+{
+    "name": "Chilseok.Editor",
+    "rootNamespace": "Chilseok.EditorTools",
+    "references": [
+        "Chilseok.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
+}

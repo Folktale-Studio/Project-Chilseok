@@ -6,10 +6,10 @@
 ## Phase 0 — 환경 (11/22까지 잔여 작업)
 - [x] Unity 6 (6000.3) URP 프로젝트를 레포 루트에 생성 (`ea9c397`)
 - [x] Input System·Test Framework·Timeline·Pipeline 기본 패키지와 새 Input System 활성화 (`ea9c397`)
-- [ ] 사용하는 컷의 2D Animation 설치 여부 확인 (B01). Cinemachine은 필요한 경우 카메라 단계에서 검토 (B11)
-- [ ] Windows(64비트) 활성 빌드 프로필 확인 (B01)
-- [ ] 칠석 asmdef·빈 테스트 씬 생성 (AI: 에디터 메뉴 `Tools/Chilseok/0. Setup Project` 작성 → 사람: 실행, B01)
-- [ ] 열린 에디터에서 `tools/harness/quality-gate.ps1 -Checks compile,editmode` 실행 (B01)
+- [x] 2D Animation 미설치를 확인 (B01). 필요한 컷에서 설치 여부를 판단한다. Cinemachine은 필요한 경우 카메라 단계에서 검토 (B11)
+- [x] 활성 빌드 대상 `StandaloneWindows64`와 기본 플랫폼 프로필 확인 (B01)
+- [x] 칠석 asmdef·빈 테스트 씬 생성 (B01, asmdef 3종과 `Tools/Chilseok/0. Setup Project` 메뉴 작성, `Assets/Scenes/ZoneTest.unity`가 저장된 상태이며 루트 오브젝트가 0개임을 Unity CLI로 확인)
+- [x] 열린 에디터에서 `tools/harness/quality-gate.ps1 -Checks compile,editmode` 실행 (B01, `mode=cli`, compile PASS·EditMode PASS 0건)
 - [x] `design/game-design.md` 내보내기와 레포 기준 기획 반영 (`9ea46b0`, `20bbfa0`)
 - 완료 기준: 빈 프로젝트에서 게이트 compile·editmode PASS(0 tests)
 
@@ -74,3 +74,4 @@
 | 11/21 | 무대와 목적 보강 | 구간 무대·깃털 형식·솔버 검증·컷 4·5·6과 일정 문서화 | 탑 유배 각색, 선택 수집과 감축 순서 결정·승인 |
 | 11/21 | 일의 분담과 감각 판단 | 세 단계 기준·플레이 조정표·Notion 기록 규칙 반영 | 분담 기준과 수치 결정 절차 지정·승인 |
 | 11/21 | 기능 백로그 작성 | 기능·에셋·QA 이슈 59건, 템플릿과 GitHub 등록 스크립트 작성 | 기능 단위 백로그와 마일스톤 승인 |
+| 11/22 | B01 환경 셋업 | 칠석 asmdef 3종과 빈 테스트 씬 메뉴 작성, 저장된 씬과 CLI 게이트 검증 | 백로그 순서와 B01 구현 계획 승인 |
