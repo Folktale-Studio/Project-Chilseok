@@ -12,3 +12,16 @@
 - 역량 — 판단력, 표현력
 - 근거 — [기록 절차 커밋](https://github.com/Folktale-Studio/Project-Chilseok/commit/4bf3e9849337a0b650a216a958388892fcc78ce0)
 - Notion — [노션 반영됨](https://app.notion.com/p/41e498d79c688192a1c4d1f3828f1aa4?pvs=204)
+
+## 기획 변경 6건을 세션 단위 기능 백로그로 재구성
+
+- 날짜 — 2026-11-21
+- 단계 — 기획
+- 도구 — Codex, Unity CLI
+- AI가 한 일 — 커밋과 기획·진행표를 대조해 완료 항목을 제외하고, 기획 변경 초안 6건을 59건의 기능·에셋·QA 백로그에 합쳤다. 이슈 템플릿 5종과 GitHub 등록 스크립트를 작성하고 선행 관계·마일스톤·PowerShell 구문을 정적으로 검증했다.
+- 사람의 판단 — 이게 기능 단위 issue 백로그가 아니지 않나?
+- 결과 — 채택
+- 실패와 교훈 — 기획 변경분 여섯 건만으로는 남은 기능과 선행 관계를 설명하기 어려웠다. 커밋 근거로 범위를 걸러 내고, 한 세션 단위와 에셋 생성·적용으로 나눴다.
+- 역량 — 판단력, 표현력
+- 근거 — [기능 백로그 커밋](https://github.com/Folktale-Studio/Project-Chilseok/commit/eecc004c336d9aba6e72e692768aea979d103b0a)
+- Notion — [노션 반영됨](https://app.notion.com/p/41f498d79c68818ab089fecbc772f28c?pvs=204)
