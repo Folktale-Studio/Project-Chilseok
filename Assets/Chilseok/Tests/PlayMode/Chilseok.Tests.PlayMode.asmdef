@@ -1,0 +1,18 @@
+{
+    "name": "Chilseok.Tests.PlayMode",
+    "rootNamespace": "Chilseok.Tests.PlayMode",
+    "references": [
+        "Chilseok.Runtime",
+        "Unity.InputSystem",
+        "Unity.InputSystem.TestFramework",
+        "UnityEngine.TestRunner"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ]
+}
