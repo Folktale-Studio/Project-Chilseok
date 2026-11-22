@@ -23,8 +23,9 @@
 - 완료 기준: 게이트 compile·editmode PASS, zone-02 클리어 최소 회전 1과 전부 수집 경로 확인
 
 ## Phase 2 — 디더 렌더 (11/22까지)
-- [ ] `DitherRenderFeature` + `DitherSettings`(밝기, 디졸브, 반전, 해상도, 보일링) (B07)
-- [ ] 큐브 씬에서 디더 화면 캡처 (B07), Windows 실행 빌드에서 확인 (B56)
+- [x] `DitherRenderFeature`와 `DitherSettings`로 PC Renderer 화면 끝에 디더 연결 (B07)
+- [x] [큐브 씬 Game 뷰 캡처](../production/qa/captures/b07-dither-preview.png)에서 먹·한지 두 색 확인 (B07, CLI 컴파일 PASS·EditMode 88/88)
+- [ ] Windows 실행 빌드에서 디더 화면 확인 (B56)
 - 완료 기준: 에디터와 Windows 실행 빌드의 디더 화면 스크린샷
 
 ## Phase 3 — 플레이어와 카메라 (11/22)
@@ -83,3 +84,4 @@
 | 11/22 | PR 머지와 이슈 자동 닫기 | 기본 브랜치 대상 PR의 `Closes #번호` 연결과 머지 후 상태 확인을 스킬에 추가 | 머지에 맞춰 이슈를 자동으로 닫는 흐름 승인 |
 | 11/22 | B05 기본 클리어 솔버 | 이동 규칙과 0–1 BFS 구현, 기획서 예시 및 EditMode 17건 추가 검증 | B05 구현 계획 승인 |
 | 11/22 | B06 깃털 전부 수집 솔버 | 수집 마스크와 완전 수집 경로 검증, 둘째 구간의 두 최소 회전 지표 기록과 EditMode 11건 추가 | B06 구현 계획 승인 |
+| 11/22 | B07 디더 렌더 | URP Render Graph 디더·튜닝 설정 구현, PC Renderer와 미리보기 연결, Game 뷰 두 색과 EditMode 88건 검증 | B07 구현과 에디터 미리보기 승인 |

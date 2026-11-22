@@ -2,7 +2,9 @@
     "name": "Chilseok.Editor",
     "rootNamespace": "Chilseok.EditorTools",
     "references": [
-        "Chilseok.Runtime"
+        "Chilseok.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"

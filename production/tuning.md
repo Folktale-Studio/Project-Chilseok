@@ -12,7 +12,11 @@
 | 회전 입력 버퍼 | 예정 `MovementSettings._rotationBufferSeconds` | 0.15초 | 0.1~0.2 | | |
 | 코요테 타임 | 예정 `MovementSettings._coyoteSeconds` | 0.08초 | 0.05~0.12 | | |
 | 낙하 리셋 높이 | 예정 `PlayerController2D._resetBelowY` | y < −3 | − | | |
-| 디더 내부 해상도 | 예정 `DitherSettings._internalResolution` | 480×270 | 320×180~640×360 | | |
-| Bayer 행렬 | 예정 `DitherSettings._bayerSize` | 4×4 | 4×4 / 8×8 | | |
+| 디더 내부 해상도 | `DitherSettings._internalResolution` | 480×270 px | 가로 320~640 px, 세로 180~360 px | | |
+| Bayer 행렬 | `DitherSettings._bayerSize` | 4×4 | 4×4 / 8×8 | | |
+| 디더 밝기 | `DitherSettings._brightness` | 0 | −1~+1 (정규화 오프셋) | | |
+| 디더 디졸브 | `DitherSettings._dissolve` | 0 | 0~1 (진행도) | | |
+| 디더 반전 | `DitherSettings._invert` | 끔 | 끔 / 켬 | | |
+| 디더 보일링 | `DitherSettings._boiling` | 0 | 0~1 (정규화 강도) | | |
 
 이동·점프 수치의 조합은 1칸 높이와 1칸 틈을 넘고 2칸 높이와 2칸 틈은 넘지 못하는지 PlayMode로 확인한다. 범위가 ‘−’인 항목은 수치 표에 조정 범위가 정해질 때까지 기본값을 쓴다.
