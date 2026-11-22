@@ -46,6 +46,7 @@ namespace Chilseok.Rendering
         private sealed class DitherPass : ScriptableRenderPass
         {
             private static readonly int ControlsId = Shader.PropertyToID("_DitherControls");
+            private static readonly int StrengthId = Shader.PropertyToID("_DitherStrength");
             private static readonly int MatrixSizeId = Shader.PropertyToID("_BayerSize");
             private static readonly int InkId = Shader.PropertyToID("_DitherInk");
             private static readonly int PaperId = Shader.PropertyToID("_DitherPaper");
@@ -96,6 +97,7 @@ namespace Chilseok.Rendering
 
                 _properties.SetVector(ControlsId, new Vector4(_settings.Brightness, _settings.Dissolve,
                     _settings.Invert ? 1f : 0f, _settings.Boiling));
+                _properties.SetFloat(StrengthId, _settings.Strength);
                 _properties.SetFloat(MatrixSizeId, _settings.BayerSize);
                 _properties.SetVector(InkId, ToRenderColor(Ink, linear));
                 _properties.SetVector(PaperId, ToRenderColor(Paper, linear));

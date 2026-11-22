@@ -14,6 +14,7 @@
 | 낙하 리셋 높이 | 예정 `PlayerController2D._resetBelowY` | y < −3 | − | | |
 | 디더 내부 해상도 | `DitherSettings._internalResolution` | 480×270 px | 가로 320~640 px, 세로 180~360 px | | |
 | Bayer 행렬 | `DitherSettings._bayerSize` | 4×4 | 4×4 / 8×8 | | |
+| 디더 강도 | `DitherSettings._strength` | 1 | 0~1 (정규화 강도) | | |
 | 디더 밝기 | `DitherSettings._brightness` | 0 | −1~+1 (정규화 오프셋) | | |
 | 디더 디졸브 | `DitherSettings._dissolve` | 0 | 0~1 (진행도) | | |
 | 디더 반전 | `DitherSettings._invert` | 끔 | 끔 / 켬 | | |

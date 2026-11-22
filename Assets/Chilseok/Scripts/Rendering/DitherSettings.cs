@@ -10,6 +10,10 @@ namespace Chilseok.Rendering
             Size8x8 = 8
         }
 
+        [SerializeField, Range(0f, 1f)]
+        [Tooltip("디더 패턴이 나타나는 밝기 범위. 0~1, 0은 점 없는 두 색, 1은 전체 패턴이다.")]
+        private float _strength = 1f;
+
         [SerializeField, Range(-1f, 1f)]
         [Tooltip("정규화 밝기 오프셋. -1~+1, 0이면 원본 밝기다.")]
         private float _brightness;
@@ -34,6 +38,7 @@ namespace Chilseok.Rendering
         [Tooltip("디더의 밝고 어두운 판정을 흔드는 정규화 강도. 0~1, 0이면 정지한다.")]
         private float _boiling;
 
+        public float Strength => Mathf.Clamp01(_strength);
         public float Brightness => Mathf.Clamp(_brightness, -1f, 1f);
         public float Dissolve => Mathf.Clamp01(_dissolve);
         public bool Invert => _invert;

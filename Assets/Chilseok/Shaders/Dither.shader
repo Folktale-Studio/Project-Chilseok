@@ -20,6 +20,7 @@ Shader "Hidden/Chilseok/Dither"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 
             float4 _DitherControls;
+            float _DitherStrength;
             float4 _DitherInk;
             float4 _DitherPaper;
             float _BayerSize;
@@ -51,7 +52,8 @@ Shader "Hidden/Chilseok/Dither"
                 float bayer = BayerThreshold(pixel);
                 float phase = frac(sin(dot(float2(pixel), float2(12.9898, 78.233))) * 43758.5453);
                 float boiling = sin((phase + _Time.y) * TWO_PI) * _DitherControls.w * 0.5;
-                float threshold = clamp(bayer + boiling, 0.0001, 0.9999);
+                // 강도가 낮을수록 중간 밝기의 좁은 범위에만 점이 생긴다.
+                float threshold = clamp(lerp(0.5, bayer + boiling, _DitherStrength), 0.0001, 0.9999);
                 float paper = step(threshold, saturate(brightness + _DitherControls.x));
                 paper = lerp(paper, 1.0 - paper, _DitherControls.z);
                 paper *= step(_DitherControls.y, bayer);
