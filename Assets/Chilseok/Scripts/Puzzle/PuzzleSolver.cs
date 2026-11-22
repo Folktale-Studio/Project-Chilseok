@@ -6,7 +6,12 @@ namespace Chilseok.Puzzle
 {
     public static class PuzzleSolver
     {
-        public static PuzzleSolveResult Solve(ZoneData zone)
+        public static PuzzleSolveResult Solve(ZoneData zone) => SolveCore(zone, null).Clear;
+
+        public static PuzzleFeatherSolveResult SolveWithFeathers(ZoneData zone) =>
+            SolveCore(zone, new FeatherCollection(zone));
+
+        private static PuzzleFeatherSolveResult SolveCore(ZoneData zone, FeatherCollection collection)
         {
             if (zone == null)
             {
@@ -23,7 +28,7 @@ namespace Chilseok.Puzzle
             var states = new Dictionary<(Vector3Int, ViewDirection), SearchNode>();
             var pending = new Queue<SearchNode>();
             var goals = new List<SearchNode>();
-            var start = new SearchNode(zone.Start, zone.StartView, 0, false);
+            var start = new SearchNode(zone.Start, zone.StartView, 0, false, 0);
             states.Add((start.Feet, start.View), start);
             pending.Enqueue(start);
 
@@ -83,7 +88,17 @@ namespace Chilseok.Puzzle
 
             int? minimumActions = goals.Count == 0 ? null : goals[0].Actions;
             var deadEndRatio = (double)(states.Count - CountStatesLeadingToGoal(goals)) / states.Count;
-            return new PuzzleSolveResult(FindMinimumRotations(start), minimumActions, states.Count, deadEndRatio);
+            var minimumRotations = FindMinimumRotations(start, 0);
+            var clear = new PuzzleSolveResult(minimumRotations, minimumActions, states.Count, deadEndRatio);
+            int? minimumAllFeathers = null;
+            if (collection != null && clear.CanClear)
+            {
+                minimumAllFeathers = collection.FullMask == 0
+                    ? minimumRotations
+                    : FindMinimumRotations(start, collection.FullMask);
+            }
+
+            return new PuzzleFeatherSolveResult(clear, minimumAllFeathers);
 
             void Connect(SearchNode from, Vector3Int feet, ViewDirection view, int rotationCost)
             {
@@ -91,7 +106,8 @@ namespace Chilseok.Puzzle
                 if (!states.TryGetValue(key, out var to))
                 {
                     // BFS에서 처음 만난 경로가 최소 행동 수를 갖는다.
-                    to = new SearchNode(feet, view, from.Actions + 1, feet == zone.Magpie);
+                    var pickup = collection?.Collect(0, feet, view) ?? 0;
+                    to = new SearchNode(feet, view, from.Actions + 1, feet == zone.Magpie, pickup);
                     states.Add(key, to);
                     pending.Enqueue(to);
                 }
@@ -104,41 +120,49 @@ namespace Chilseok.Puzzle
         private static bool PassesMagpie(Vector3Int from, Vector3Int landing, Vector3Int magpie) =>
             from.x == magpie.x && from.z == magpie.z && magpie.y < from.y && magpie.y > landing.y;
 
-        private static int? FindMinimumRotations(SearchNode start)
+        private static int? FindMinimumRotations(SearchNode start, int requiredMask)
         {
-            var deque = new LinkedList<(SearchNode Node, int Cost)>();
-            start.Rotations = 0;
-            deque.AddFirst((start, 0));
+            var deque = new LinkedList<(SearchNode Node, int Mask, int Cost)>();
+            var rotations = new Dictionary<(SearchNode Node, int Mask), int> { [(start, 0)] = 0 };
+            deque.AddFirst((start, 0, 0));
             while (deque.First != null)
             {
-                var (node, cost) = deque.First.Value;
+                var (node, mask, cost) = deque.First.Value;
                 deque.RemoveFirst();
-                if (cost != node.Rotations)
+                if (cost != rotations[(node, mask)])
                 {
                     continue;
                 }
 
                 if (node.IsGoal)
                 {
-                    return cost;
+                    if (mask == requiredMask)
+                    {
+                        return cost;
+                    }
+
+                    // 일부만 수집한 채 까치에 닿은 경로도 여기서 끝난다.
+                    continue;
                 }
 
                 foreach (var edge in node.Outgoing)
                 {
                     var nextCost = cost + edge.RotationCost;
-                    if (nextCost >= edge.Target.Rotations)
+                    var nextMask = mask | (edge.Target.PickupMask & requiredMask);
+                    var next = (edge.Target, nextMask);
+                    if (rotations.TryGetValue(next, out var recorded) && nextCost >= recorded)
                     {
                         continue;
                     }
 
-                    edge.Target.Rotations = nextCost;
+                    rotations[next] = nextCost;
                     if (edge.RotationCost == 0)
                     {
-                        deque.AddFirst((edge.Target, nextCost));
+                        deque.AddFirst((edge.Target, nextMask, nextCost));
                     }
                     else
                     {
-                        deque.AddLast((edge.Target, nextCost));
+                        deque.AddLast((edge.Target, nextMask, nextCost));
                     }
                 }
             }
@@ -170,16 +194,17 @@ namespace Chilseok.Puzzle
             public ViewDirection View { get; }
             public int Actions { get; }
             public bool IsGoal { get; }
-            public int Rotations { get; set; } = int.MaxValue;
+            public int PickupMask { get; }
             public List<Edge> Outgoing { get; } = new List<Edge>();
             public List<SearchNode> Incoming { get; } = new List<SearchNode>();
 
-            public SearchNode(Vector3Int feet, ViewDirection view, int actions, bool isGoal)
+            public SearchNode(Vector3Int feet, ViewDirection view, int actions, bool isGoal, int pickupMask)
             {
                 Feet = feet;
                 View = view;
                 Actions = actions;
                 IsGoal = isGoal;
+                PickupMask = pickupMask;
             }
         }
 
@@ -210,6 +235,18 @@ namespace Chilseok.Puzzle
             MinimumActions = minimumActions;
             ExploredStates = exploredStates;
             DeadEndRatio = deadEndRatio;
+        }
+    }
+
+    public readonly struct PuzzleFeatherSolveResult
+    {
+        public PuzzleSolveResult Clear { get; }
+        public int? MinimumRotationsWithAllFeathers { get; }
+
+        internal PuzzleFeatherSolveResult(PuzzleSolveResult clear, int? minimumRotationsWithAllFeathers)
+        {
+            Clear = clear;
+            MinimumRotationsWithAllFeathers = minimumRotationsWithAllFeathers;
         }
     }
 }

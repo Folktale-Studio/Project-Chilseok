@@ -47,6 +47,99 @@ namespace Chilseok.Tests.EditMode
         }
 
         [Test]
+        public void SolveWithFeathers_DocumentedExample_RequiresOneRotationForEachGoal()
+        {
+            var zone = ZoneParser.Parse(File.ReadAllText(Path.Combine(LevelsPath, "zone-02.txt")));
+
+            var result = PuzzleSolver.SolveWithFeathers(zone);
+
+            Assert.That(result.Clear.MinimumRotations, Is.EqualTo(1));
+            Assert.That(result.MinimumRotationsWithAllFeathers, Is.EqualTo(1));
+            Assert.That(result.Clear.MinimumActions, Is.EqualTo(7));
+            Assert.That(result.Clear.ExploredStates, Is.EqualTo(31));
+        }
+
+        [Test]
+        public void SolveWithFeathers_ZoneWithoutFeathers_CanClearWithEmptyMask()
+        {
+            var zone = Fixture(new[] { "#####" }, new[] { "S...M" });
+
+            var result = PuzzleSolver.SolveWithFeathers(zone);
+
+            Assert.That(result.Clear.MinimumRotations, Is.Zero);
+            Assert.That(result.MinimumRotationsWithAllFeathers, Is.Zero);
+        }
+
+        [Test]
+        public void SolveWithFeathers_FeatherRequiresOppositeView_ReportsMoreRotationsForCollection()
+        {
+            var zone = FixtureWithFeatherViews("2 1 0 = 180", new[] { "#####" }, new[] { "S.F.M" });
+
+            var result = PuzzleSolver.SolveWithFeathers(zone);
+
+            Assert.That(result.Clear.MinimumRotations, Is.Zero);
+            Assert.That(result.MinimumRotationsWithAllFeathers, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void SolveWithFeathers_RotationReachesActiveFeather_CollectsBeforeWalkingToExit()
+        {
+            var zone = FixtureWithFeatherViews("4 1 0 = 90",
+                new[] { "#####", "..#.." }, new[] { "S...F", "..M.." });
+
+            var result = PuzzleSolver.SolveWithFeathers(zone);
+
+            Assert.That(result.MinimumRotationsWithAllFeathers, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SolveWithFeathers_MagpieBeforeFeather_EndsRouteBeforeFullCollection()
+        {
+            var zone = Fixture(new[] { "##.", "...", "...", "..#" }, new[] { "SM.", "...", "...", "..F" });
+
+            var result = PuzzleSolver.SolveWithFeathers(zone);
+
+            Assert.That(result.Clear.MinimumRotations, Is.Zero);
+            Assert.That(result.MinimumRotationsWithAllFeathers, Is.Null);
+        }
+
+        [Test]
+        public void Solve_ZoneAboveCollectionLimit_KeepsBasicClearAvailable()
+        {
+            var zone = Fixture(new[] { "########" }, new[] { "SFFFFFFM" });
+
+            Assert.That(PuzzleSolver.Solve(zone).CanClear, Is.True);
+            Assert.Throws<ArgumentException>(() => PuzzleSolver.SolveWithFeathers(zone));
+        }
+
+        [TestCase(1, 0, ViewDirection.Degrees0, 0)]
+        [TestCase(1, 1, ViewDirection.Degrees90, 0)]
+        [TestCase(1, 1, ViewDirection.Degrees0, 1)]
+        [TestCase(2, 1, ViewDirection.Degrees180, 2)]
+        public void Collect_FeetAndView_OnlyAddsTheMatchingActiveFeather(int x, int z, ViewDirection view, int expectedMask)
+        {
+            var zone = FixtureWithFeatherViews("1 1 1 = 0", new[] { "####", "####" }, new[] { "S..M", ".FF." });
+            var collection = new FeatherCollection(zone);
+
+            var mask = collection.Collect(0, new Vector3Int(x, 1, z), view);
+
+            Assert.That(mask, Is.EqualTo(expectedMask));
+        }
+
+        [Test]
+        public void Collect_RevisitedFeather_DoesNotChangeMask()
+        {
+            var zone = Fixture(new[] { "####" }, new[] { "SFFM" });
+            var collection = new FeatherCollection(zone);
+            var first = zone.Feathers[0].Position;
+            var second = zone.Feathers[1].Position;
+
+            var mask = collection.Collect(0, first, ViewDirection.Degrees0);
+            Assert.That(collection.Collect(mask, first, ViewDirection.Degrees0), Is.EqualTo(mask));
+            Assert.That(collection.Collect(mask, second, ViewDirection.Degrees0), Is.EqualTo(collection.FullMask));
+        }
+
+        [Test]
         public void Solve_FewerActionsWithRotation_MinimizesBothMetricsIndependently()
         {
             var zone = Fixture(new[] { "######" }, new[] { "S....M" });
@@ -161,7 +254,9 @@ namespace Chilseok.Tests.EditMode
             Assert.That(PuzzleMovement.TryFall(map, next, out _), Is.False);
         }
 
-        private static ZoneData Fixture(params string[][] layers)
+        private static ZoneData Fixture(params string[][] layers) => FixtureWithFeatherViews(null, layers);
+
+        private static ZoneData FixtureWithFeatherViews(string featherViews, params string[][] layers)
         {
             var zone = new StringBuilder();
             zone.AppendLine("name: 솔버 테스트");
@@ -170,6 +265,11 @@ namespace Chilseok.Tests.EditMode
             zone.AppendLine("rotations: 0-16");
             zone.AppendLine("start-view: 0");
             zone.AppendLine("intent: 목표에 이르는 경로 확인");
+            if (featherViews != null)
+            {
+                zone.AppendLine($"feather-views: {featherViews}");
+            }
+
             for (var y = 0; y < layers.Length; y++)
             {
                 zone.AppendLine($"y={y}");
