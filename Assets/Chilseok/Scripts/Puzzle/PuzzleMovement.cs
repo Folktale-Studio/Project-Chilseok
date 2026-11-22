@@ -4,7 +4,7 @@ namespace Chilseok.Puzzle
 {
     public static class PuzzleMovement
     {
-        private const int ResetHeight = -3;
+        internal const int ResetHeight = -3;
 
         public static bool TryWalk(ProjectionMap map, Vector3Int feet, int direction, out Vector3Int next)
         {

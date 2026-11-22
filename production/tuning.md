@@ -4,14 +4,14 @@
 
 | 항목 | 위치(컴포넌트.필드) | 기본값 | 범위 | 사람이 정한 값 | 날짜 |
 | --- | --- | --- | --- | --- | --- |
-| 이동 속도 | 예정 `MovementSettings._moveSpeed` | 4칸/초 | 3~5 | | |
-| 점프 높이 | 예정 `MovementSettings._jumpHeight` | 1.25칸 | 1.1~1.4 | | |
-| 점프 가로 거리 | 예정 `MovementSettings._jumpDistance` | 2칸 | 1.8~2.4 | | |
-| 중력 | 예정 `MovementSettings._gravity` | 30칸/초² | 25~40 | | |
+| 이동 속도 | `MovementSettings._moveSpeed` | 4칸/초 | 3~5칸/초 | | |
+| 점프 높이 | `MovementSettings._jumpHeight` | 1.25칸 | 1.1~1.4칸 | | |
+| 점프 가로 거리 | `MovementSettings._jumpDistance` | 2칸 | 1.8~2.4칸, 가로 접근 속도 기준 | | |
+| 중력 | `MovementSettings._gravity` | 30칸/초² | 25~40칸/초² | | |
 | 회전 시간 | 예정 `MovementSettings._rotationSeconds` | 0.35초 | 0.25~0.5 | | |
 | 회전 입력 버퍼 | 예정 `MovementSettings._rotationBufferSeconds` | 0.15초 | 0.1~0.2 | | |
-| 코요테 타임 | 예정 `MovementSettings._coyoteSeconds` | 0.08초 | 0.05~0.12 | | |
-| 낙하 리셋 높이 | 예정 `PlayerController2D._resetBelowY` | y < −3 | − | | |
+| 코요테 타임 | `MovementSettings._coyoteSeconds` | 0.08초 | 0.05~0.12초 | | |
+| 낙하 리셋 높이 | `PuzzleMovement.ResetHeight` | y < −3 | − | | |
 | 디더 내부 해상도 | `DitherSettings._internalResolution` | 480×270 px | 가로 320~640 px, 세로 180~360 px | | |
 | Bayer 행렬 | `DitherSettings._bayerSize` | 4×4 | 4×4 / 8×8 | | |
 | 디더 강도 | `DitherSettings._strength` | 1 | 0~1 (정규화 강도) | | |
