@@ -1,0 +1,11 @@
+name: 회전 잠금 연결 길
+teaches: 연결 길에서는 걸어서 다음 구간으로 간다
+size: 6 2 1
+rotations: 0-0
+start-view: 0
+intent: 0도에서 좌우로 걸어 두 구간 사이를 이동한다
+
+y=0
+z0: ######
+y=1
+z0: S....M

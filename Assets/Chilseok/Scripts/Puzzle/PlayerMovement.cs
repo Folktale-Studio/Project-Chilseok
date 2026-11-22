@@ -45,9 +45,13 @@ namespace Chilseok.Puzzle
         public Vector3 Position { get; private set; }
         public ViewDirection Direction => _map.Direction;
         public bool IsGrounded => _motion is Motion.Grounded or Motion.Walking;
+        internal bool IsAtRestOnSupport => _motion == Motion.Grounded;
+        internal Vector3Int Size { get; }
+        internal ViewDirection StartView => _startView;
 
         public PlayerMovement(ZoneData zone)
         {
+            Size = zone.Size;
             _views = new[]
             {
                 new ProjectionMap(zone, ViewDirection.Degrees0),
@@ -65,6 +69,21 @@ namespace Chilseok.Puzzle
         {
             _map = MapFor(_startView);
             GroundAt(_start);
+        }
+
+        internal bool TryEnter(Vector3Int feet)
+        {
+            var entrance = MapFor(_startView);
+            // 이웃 격자와 같은 발 칸을 공유할 때만 이동 중인 위치를 넘긴다.
+            if (!ZoneData.IsInside(feet, Size) || entrance.IsSolid(entrance.Project(feet)) ||
+                !Reprojector.TryUpdateDepth(entrance, feet, out var grounded) || grounded != feet)
+            {
+                return false;
+            }
+
+            _map = entrance;
+            GroundAt(feet);
+            return true;
         }
 
         public RotationResult PreviewRotation(ViewDirection target)

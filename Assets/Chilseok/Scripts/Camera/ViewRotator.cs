@@ -20,6 +20,7 @@ namespace Chilseok.CameraSystem
         private PlayerController2D _player;
         private PlayerInputReader _input;
         private MovementSettings _settings;
+        private ZoneTracker _tracker;
         private int _requestedStep;
         private float _bufferRemaining;
         private RotationResult _pending;
@@ -35,6 +36,7 @@ namespace Chilseok.CameraSystem
             _player = GetComponent<PlayerController2D>();
             _input = GetComponent<PlayerInputReader>();
             _settings = _player.Settings;
+            _tracker = GetComponent<ZoneTracker>();
             if (_viewPivot == null || !_player.isActiveAndEnabled)
             {
                 Debug.LogWarning("[ViewRotator] 회전 중심과 활성 플레이어를 연결하세요.", this);
@@ -47,6 +49,8 @@ namespace Chilseok.CameraSystem
             _input.RotateLeftPressed += RequestLeft;
             _input.RotateRightPressed += RequestRight;
             _input.ResetPressed += ClearRequest;
+            if (_tracker != null)
+                _tracker.SegmentChanged += SyncOnSegmentChange;
             SetAngle((int)_player.Direction);
             ShowRejection(false);
         }
@@ -56,6 +60,8 @@ namespace Chilseok.CameraSystem
             _input.RotateLeftPressed -= RequestLeft;
             _input.RotateRightPressed -= RequestRight;
             _input.ResetPressed -= ClearRequest;
+            if (_tracker != null)
+                _tracker.SegmentChanged -= SyncOnSegmentChange;
             if (IsRotating)
             {
                 SetAngle((int)_player.Direction);
@@ -91,6 +97,12 @@ namespace Chilseok.CameraSystem
 
             // 낙하나 수동 리셋이 시작 시점으로 돌아가면 카메라도 같은 프레임에 맞춘다.
             SetAngle((int)_player.Direction);
+            if (!CanRotate)
+            {
+                ClearRequest();
+                return;
+            }
+
             if (_rejectedFeet.HasValue && _rejectedFeet.Value != _player.Feet)
                 ShowRejection(false);
 
@@ -128,9 +140,20 @@ namespace Chilseok.CameraSystem
 
         private void Request(int step)
         {
+            if (!CanRotate)
+                return;
+
             ShowRejection(false);
             _requestedStep = step;
             _bufferRemaining = _settings.RotationBufferSeconds;
+        }
+
+        private bool CanRotate => _tracker == null || _tracker.CanRotate;
+
+        private void SyncOnSegmentChange()
+        {
+            ClearRequest();
+            SetAngle((int)_player.Direction);
         }
 
         private void ClearRequest()

@@ -17,12 +17,17 @@ namespace Chilseok.Player
 
         private PlayerInputReader _input;
         private PlayerMovement _movement;
+        private Vector3Int _origin;
         private bool _jumpPressed;
 
         public Vector3Int Feet => _movement.Feet;
         public ViewDirection Direction => _movement.Direction;
         public bool IsGrounded => _movement != null && _movement.IsGrounded;
         internal MovementSettings Settings => _settings;
+        internal TextAsset StartingLayout => _zoneData;
+        internal PlayerMovement Movement => _movement;
+        internal Vector3Int RouteFeet => _origin + _movement.Feet;
+        internal float HorizontalInput => _input.HorizontalInput;
 
         private void Awake()
         {
@@ -37,7 +42,7 @@ namespace Chilseok.Player
             try
             {
                 _movement = new PlayerMovement(ZoneParser.Parse(_zoneData.text));
-                transform.localPosition = _movement.Position;
+                ApplyPosition();
             }
             catch (System.FormatException error)
             {
@@ -69,10 +74,22 @@ namespace Chilseok.Player
 
             _movement.Tick(Time.deltaTime, _input.HorizontalInput, _jumpPressed, _settings.Read());
             _jumpPressed = false;
-            transform.localPosition = _movement.Position;
+            ApplyPosition();
         }
 
         private void RequestJump() => _jumpPressed = true;
+
+        internal bool TryEnterSegment(PlayerMovement target, Vector3Int origin)
+        {
+            if (!_movement.IsAtRestOnSupport || !target.TryEnter(RouteFeet - origin))
+                return false;
+
+            _movement = target;
+            _origin = origin;
+            _jumpPressed = false;
+            ApplyPosition();
+            return true;
+        }
 
         internal RotationResult PreviewRotation(ViewDirection direction) => _movement.PreviewRotation(direction);
 
@@ -80,14 +97,16 @@ namespace Chilseok.Player
         {
             _jumpPressed = false;
             _movement.ApplyRotation(rotation, _settings.Read().Gravity);
-            transform.localPosition = _movement.Position;
+            ApplyPosition();
         }
 
         private void ResetToStart()
         {
             _jumpPressed = false;
             _movement.Reset();
-            transform.localPosition = _movement.Position;
+            ApplyPosition();
         }
+
+        private void ApplyPosition() => transform.localPosition = _origin + _movement.Position;
     }
 }

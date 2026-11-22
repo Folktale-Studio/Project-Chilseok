@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Chilseok.CameraSystem;
 using Chilseok.Player;
 using Chilseok.Puzzle;
@@ -12,10 +13,13 @@ namespace Chilseok.EditorTools
     {
         private const string MenuPath = "Tools/Chilseok/2. Setup Movement Preview";
         private const string RotationMenuPath = "Tools/Chilseok/3. Setup Rotation Preview";
+        private const string TrackingMenuPath = "Tools/Chilseok/4. Setup Zone Tracking Preview";
         private const string UndoLabel = "Setup Chilseok Movement Preview";
         private const string ScenePath = "Assets/Scenes/ZoneTest.unity";
         private const string LayoutPath = "Assets/Chilseok/Editor/PlayerMovementPreviewLayout.txt";
         private const string RotationLayoutPath = "Assets/Chilseok/Editor/PlayerRotationPreviewLayout.txt";
+        private const string TrackingLayoutPath = "Assets/Chilseok/Editor/PlayerZoneTrackingPreviewLayout.txt";
+        private const string ConnectorLayoutPath = "Assets/Chilseok/Editor/PlayerZoneConnectorPreviewLayout.txt";
         private const string SettingsPath = "Assets/Settings/ChilseokMovementSettings.asset";
         private const string GrayMaterialPath = "Assets/Chilseok/Editor/DitherPreviewGray.mat";
         private const string PreviewName = "Movement Preview";
@@ -26,7 +30,11 @@ namespace Chilseok.EditorTools
         [MenuItem(RotationMenuPath)]
         private static void CreateOrUpdateRotation() => CreateOrUpdate(RotationLayoutPath, withRotation: true);
 
-        private static void CreateOrUpdate(string layoutPath, bool withRotation)
+        [MenuItem(TrackingMenuPath)]
+        private static void CreateOrUpdateTracking() => CreateOrUpdate(TrackingLayoutPath, withRotation: true,
+            connectorPath: ConnectorLayoutPath);
+
+        private static void CreateOrUpdate(string layoutPath, bool withRotation, string connectorPath = null)
         {
             var layout = AssetDatabase.LoadAssetAtPath<TextAsset>(layoutPath);
             var gray = AssetDatabase.LoadAssetAtPath<Material>(GrayMaterialPath);
@@ -36,7 +44,15 @@ namespace Chilseok.EditorTools
                 return;
             }
 
+            var connector = connectorPath == null ? null : AssetDatabase.LoadAssetAtPath<TextAsset>(connectorPath);
+            if (connectorPath != null && connector == null)
+            {
+                Debug.LogError($"[Chilseok] 연결 길 미리보기에 필요한 {connectorPath}를 확인하세요.");
+                return;
+            }
+
             var zone = ZoneParser.Parse(layout.text);
+            var connectorZone = connector == null ? null : ZoneParser.Parse(connector.text);
             var settings = AssetDatabase.LoadAssetAtPath<MovementSettings>(SettingsPath);
             if (settings == null)
             {
@@ -56,10 +72,13 @@ namespace Chilseok.EditorTools
 
             var root = CreateObject(PreviewName, null);
             var pivot = AddCameraAndLight(root.transform, zone.Size);
-            AddBlocks(root.transform, zone, gray);
             var player = AddPlayer(root.transform, layout, settings, zone.Start, gray);
             if (withRotation)
                 AddRotationPreview(player, pivot, gray);
+            if (connector == null)
+                AddBlocks(root.transform, zone, gray, Vector3Int.zero);
+            else
+                AddTrackingPreview(root.transform, player, pivot, gray, layout, zone, connector, connectorZone);
             EditorSceneManager.MarkSceneDirty(scene);
             Undo.CollapseUndoOperations(group);
             Selection.activeGameObject = root;
@@ -67,6 +86,7 @@ namespace Chilseok.EditorTools
 
         [MenuItem(MenuPath, true)]
         [MenuItem(RotationMenuPath, true)]
+        [MenuItem(TrackingMenuPath, true)]
         private static bool CanCreateOrUpdate() => !EditorApplication.isPlayingOrWillChangePlaymode &&
             SceneManager.GetActiveScene().path == ScenePath;
 
@@ -90,7 +110,8 @@ namespace Chilseok.EditorTools
             return pivot;
         }
 
-        private static void AddBlocks(Transform root, ZoneData zone, Material gray)
+        private static void AddBlocks(Transform root, ZoneData zone, Material gray, Vector3Int origin,
+            HashSet<Vector3Int> drawn = null)
         {
             var blocks = CreateObject("Grid", root).transform;
             for (var y = 0; y < zone.Size.y; y++)
@@ -98,9 +119,43 @@ namespace Chilseok.EditorTools
             for (var x = 0; x < zone.Size.x; x++)
             {
                 var cell = new Vector3Int(x, y, z);
-                if (zone.IsSolid(cell))
-                    AddCube(blocks, $"Block {x},{y},{z}", cell + Vector3.up * 0.5f, Vector3.one * 0.97f, gray);
+                var position = origin + cell;
+                if (zone.IsSolid(cell) && (drawn == null || drawn.Add(position)))
+                    AddCube(blocks, $"Block {x},{y},{z}", position + Vector3.up * 0.5f, Vector3.one * 0.97f, gray);
             }
+        }
+
+        private static void AddTrackingPreview(Transform sceneRoot, GameObject player, Transform pivot,
+            Material gray, TextAsset layout, ZoneData zone, TextAsset connector, ZoneData connectorZone)
+        {
+            var connectorOrigin = Vector3Int.right * (zone.Size.x - 1);
+            var nextZoneOrigin = connectorOrigin + Vector3Int.right * (connectorZone.Size.x - 1);
+            var drawn = new HashSet<Vector3Int>();
+            AddBlocks(CreateObject("Zone 1", sceneRoot).transform, zone, gray, Vector3Int.zero, drawn);
+            AddBlocks(CreateObject("Connector", sceneRoot).transform, connectorZone, gray, connectorOrigin, drawn);
+            AddBlocks(CreateObject("Zone 2", sceneRoot).transform, zone, gray, nextZoneOrigin, drawn);
+
+            var tracker = Undo.AddComponent<ZoneTracker>(player);
+            var trackerData = new SerializedObject(tracker);
+            var segments = trackerData.FindProperty("_segments");
+            segments.arraySize = 3;
+            BindSegment(segments.GetArrayElementAtIndex(0), layout, Vector3Int.zero, false);
+            BindSegment(segments.GetArrayElementAtIndex(1), connector, connectorOrigin, true);
+            BindSegment(segments.GetArrayElementAtIndex(2), layout, nextZoneOrigin, false);
+            trackerData.ApplyModifiedProperties();
+
+            var follow = Undo.AddComponent<PlayerCameraFollow>(pivot.gameObject);
+            var followData = new SerializedObject(follow);
+            followData.FindProperty("_target").objectReferenceValue = player.transform;
+            followData.ApplyModifiedProperties();
+        }
+
+        private static void BindSegment(SerializedProperty segment, TextAsset layout, Vector3Int origin,
+            bool isConnector)
+        {
+            segment.FindPropertyRelative("_layout").objectReferenceValue = layout;
+            segment.FindPropertyRelative("_origin").vector3IntValue = origin;
+            segment.FindPropertyRelative("_connector").boolValue = isConnector;
         }
 
         private static GameObject AddPlayer(Transform root, TextAsset layout, MovementSettings settings,
