@@ -24,8 +24,10 @@ namespace Chilseok.Puzzle
 
         private enum Motion { Grounded, Walking, Jumping, Falling }
 
-        private readonly ProjectionMap _map;
+        private readonly ProjectionMap[] _views;
+        private readonly ViewDirection _startView;
         private readonly Vector3Int _start;
+        private ProjectionMap _map;
         private Motion _motion;
         private Vector3Int _target;
         private Vector3Int _lastGroundedFeet;
@@ -46,12 +48,54 @@ namespace Chilseok.Puzzle
 
         public PlayerMovement(ZoneData zone)
         {
-            _map = new ProjectionMap(zone, zone.StartView);
+            _views = new[]
+            {
+                new ProjectionMap(zone, ViewDirection.Degrees0),
+                new ProjectionMap(zone, ViewDirection.Degrees90),
+                new ProjectionMap(zone, ViewDirection.Degrees180),
+                new ProjectionMap(zone, ViewDirection.Degrees270)
+            };
+            _startView = zone.StartView;
+            _map = MapFor(_startView);
             Reprojector.TryUpdateDepth(_map, zone.Start, out _start);
             Reset();
         }
 
-        public void Reset() => GroundAt(_start);
+        public void Reset()
+        {
+            _map = MapFor(_startView);
+            GroundAt(_start);
+        }
+
+        public RotationResult PreviewRotation(ViewDirection target)
+        {
+            var feet = Feet;
+            if (!IsGrounded)
+                return new RotationResult(RotationOutcome.RejectedInAir, Direction, feet);
+
+            // 칸 사이에서 돌 때는 현재 화면 위치에 더 가까운 발 칸을 기준으로 삼는다.
+            if (_motion == Motion.Walking && _progress >= 0.5f &&
+                !Reprojector.TryUpdateDepth(_map, _target, out feet))
+            {
+                return new RotationResult(RotationOutcome.RejectedInAir, Direction, Feet);
+            }
+
+            return Reprojector.Rotate(_map, MapFor(target), feet);
+        }
+
+        public void ApplyRotation(RotationResult rotation, float gravity)
+        {
+            if (!rotation.Succeeded)
+                return;
+
+            _map = MapFor(rotation.Direction);
+            if (rotation.Outcome == RotationOutcome.Grounded)
+                GroundAt(rotation.Feet);
+            else
+                BeginFall(rotation.Feet, gravity, canUseCoyote: false);
+        }
+
+        private ProjectionMap MapFor(ViewDirection direction) => _views[(int)direction / 90];
 
         public void Tick(float dt, float horizontal, bool jumpPressed, Tuning tuning)
         {

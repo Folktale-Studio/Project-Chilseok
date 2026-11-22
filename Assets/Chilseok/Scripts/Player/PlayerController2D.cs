@@ -22,6 +22,7 @@ namespace Chilseok.Player
         public Vector3Int Feet => _movement.Feet;
         public ViewDirection Direction => _movement.Direction;
         public bool IsGrounded => _movement != null && _movement.IsGrounded;
+        internal MovementSettings Settings => _settings;
 
         private void Awake()
         {
@@ -60,12 +61,27 @@ namespace Chilseok.Player
 
         private void Update()
         {
+            if (_input.IsInputLocked)
+            {
+                _jumpPressed = false;
+                return;
+            }
+
             _movement.Tick(Time.deltaTime, _input.HorizontalInput, _jumpPressed, _settings.Read());
             _jumpPressed = false;
             transform.localPosition = _movement.Position;
         }
 
         private void RequestJump() => _jumpPressed = true;
+
+        internal RotationResult PreviewRotation(ViewDirection direction) => _movement.PreviewRotation(direction);
+
+        internal void ApplyRotation(RotationResult rotation)
+        {
+            _jumpPressed = false;
+            _movement.ApplyRotation(rotation, _settings.Read().Gravity);
+            transform.localPosition = _movement.Position;
+        }
 
         private void ResetToStart()
         {

@@ -1,3 +1,4 @@
+using Chilseok.CameraSystem;
 using Chilseok.Player;
 using Chilseok.Puzzle;
 using UnityEditor;
@@ -10,21 +11,28 @@ namespace Chilseok.EditorTools
     internal static class PlayerMovementPreviewMenu
     {
         private const string MenuPath = "Tools/Chilseok/2. Setup Movement Preview";
+        private const string RotationMenuPath = "Tools/Chilseok/3. Setup Rotation Preview";
         private const string UndoLabel = "Setup Chilseok Movement Preview";
         private const string ScenePath = "Assets/Scenes/ZoneTest.unity";
         private const string LayoutPath = "Assets/Chilseok/Editor/PlayerMovementPreviewLayout.txt";
+        private const string RotationLayoutPath = "Assets/Chilseok/Editor/PlayerRotationPreviewLayout.txt";
         private const string SettingsPath = "Assets/Settings/ChilseokMovementSettings.asset";
         private const string GrayMaterialPath = "Assets/Chilseok/Editor/DitherPreviewGray.mat";
         private const string PreviewName = "Movement Preview";
 
         [MenuItem(MenuPath)]
-        private static void CreateOrUpdate()
+        private static void CreateOrUpdateMovement() => CreateOrUpdate(LayoutPath, withRotation: false);
+
+        [MenuItem(RotationMenuPath)]
+        private static void CreateOrUpdateRotation() => CreateOrUpdate(RotationLayoutPath, withRotation: true);
+
+        private static void CreateOrUpdate(string layoutPath, bool withRotation)
         {
-            var layout = AssetDatabase.LoadAssetAtPath<TextAsset>(LayoutPath);
+            var layout = AssetDatabase.LoadAssetAtPath<TextAsset>(layoutPath);
             var gray = AssetDatabase.LoadAssetAtPath<Material>(GrayMaterialPath);
             if (layout == null || gray == null)
             {
-                Debug.LogError($"[Chilseok] 이동 미리보기에 필요한 {LayoutPath}, {GrayMaterialPath}를 확인하세요.");
+                Debug.LogError($"[Chilseok] 미리보기에 필요한 {layoutPath}, {GrayMaterialPath}를 확인하세요.");
                 return;
             }
 
@@ -47,22 +55,27 @@ namespace Chilseok.EditorTools
             }
 
             var root = CreateObject(PreviewName, null);
-            AddCameraAndLight(root.transform, zone.Size);
+            var pivot = AddCameraAndLight(root.transform, zone.Size);
             AddBlocks(root.transform, zone, gray);
-            AddPlayer(root.transform, layout, settings, zone.Start, gray);
+            var player = AddPlayer(root.transform, layout, settings, zone.Start, gray);
+            if (withRotation)
+                AddRotationPreview(player, pivot, gray);
             EditorSceneManager.MarkSceneDirty(scene);
             Undo.CollapseUndoOperations(group);
             Selection.activeGameObject = root;
         }
 
         [MenuItem(MenuPath, true)]
+        [MenuItem(RotationMenuPath, true)]
         private static bool CanCreateOrUpdate() => !EditorApplication.isPlayingOrWillChangePlaymode &&
             SceneManager.GetActiveScene().path == ScenePath;
 
-        private static void AddCameraAndLight(Transform root, Vector3Int size)
+        private static Transform AddCameraAndLight(Transform root, Vector3Int size)
         {
-            var cameraObject = CreateObject("Camera", root);
-            cameraObject.transform.localPosition = new Vector3((size.x - 1) * 0.5f, 1.4f, -12f);
+            var pivot = CreateObject("View Pivot", root).transform;
+            pivot.localPosition = new Vector3((size.x - 1) * 0.5f, 1.4f, (size.z - 1) * 0.5f);
+            var cameraObject = CreateObject("Camera", pivot);
+            cameraObject.transform.localPosition = Vector3.back * 12f;
             var camera = Undo.AddComponent<Camera>(cameraObject);
             camera.orthographic = true;
             camera.orthographicSize = 4.1f;
@@ -74,6 +87,7 @@ namespace Chilseok.EditorTools
             var light = Undo.AddComponent<Light>(lightObject);
             light.type = LightType.Directional;
             light.intensity = 1.8f;
+            return pivot;
         }
 
         private static void AddBlocks(Transform root, ZoneData zone, Material gray)
@@ -89,7 +103,7 @@ namespace Chilseok.EditorTools
             }
         }
 
-        private static void AddPlayer(Transform root, TextAsset layout, MovementSettings settings,
+        private static GameObject AddPlayer(Transform root, TextAsset layout, MovementSettings settings,
             Vector3Int feet, Material gray)
         {
             var player = CreateObject("Gyeonu", root);
@@ -100,6 +114,26 @@ namespace Chilseok.EditorTools
             data.FindProperty("_settings").objectReferenceValue = settings;
             data.ApplyModifiedProperties();
             AddCube(player.transform, "Body", Vector3.up * 0.5f, new Vector3(0.6f, 1f, 0.6f), gray);
+            return player;
+        }
+
+        private static void AddRotationPreview(GameObject player, Transform pivot, Material gray)
+        {
+            var camera = pivot.GetComponentInChildren<Camera>();
+            var marker = CreateObject("Rotation Rejected", camera.transform);
+            marker.transform.localPosition = new Vector3(0f, 2.8f, 4f);
+            var scale = new Vector3(0.75f, 0.12f, 0.12f);
+            AddCube(marker.transform, "Stroke A", Vector3.zero, scale, gray).localRotation =
+                Quaternion.Euler(0f, 0f, 45f);
+            AddCube(marker.transform, "Stroke B", Vector3.zero, scale, gray).localRotation =
+                Quaternion.Euler(0f, 0f, -45f);
+            marker.SetActive(false);
+
+            var rotator = Undo.AddComponent<ViewRotator>(player);
+            var data = new SerializedObject(rotator);
+            data.FindProperty("_viewPivot").objectReferenceValue = pivot;
+            data.FindProperty("_rejectedIndicator").objectReferenceValue = marker;
+            data.ApplyModifiedProperties();
         }
 
         private static GameObject CreateObject(string name, Transform parent)
@@ -111,7 +145,7 @@ namespace Chilseok.EditorTools
             return gameObject;
         }
 
-        private static void AddCube(Transform parent, string name, Vector3 position, Vector3 scale, Material material)
+        private static Transform AddCube(Transform parent, string name, Vector3 position, Vector3 scale, Material material)
         {
             var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = name;
@@ -122,6 +156,7 @@ namespace Chilseok.EditorTools
             cube.GetComponent<MeshRenderer>().sharedMaterial = material;
             // 충돌과 낙하는 투영 맵에서 판정한다.
             Undo.DestroyObjectImmediate(cube.GetComponent<BoxCollider>());
+            return cube.transform;
         }
     }
 }

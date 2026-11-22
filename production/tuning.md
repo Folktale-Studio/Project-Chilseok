@@ -8,8 +8,9 @@
 | 점프 높이 | `MovementSettings._jumpHeight` | 1.25칸 | 1.1~1.4칸 | | |
 | 점프 가로 거리 | `MovementSettings._jumpDistance` | 2칸 | 1.8~2.4칸, 가로 접근 속도 기준 | | |
 | 중력 | `MovementSettings._gravity` | 30칸/초² | 25~40칸/초² | | |
-| 회전 시간 | 예정 `MovementSettings._rotationSeconds` | 0.35초 | 0.25~0.5 | | |
-| 회전 입력 버퍼 | 예정 `MovementSettings._rotationBufferSeconds` | 0.15초 | 0.1~0.2 | | |
+| 회전 시간 | `MovementSettings._rotationSeconds` | 0.35초 | 0.25~0.5초 | | |
+| 회전 입력 버퍼 | `MovementSettings._rotationBufferSeconds` | 0.15초 | 0.1~0.2초 | | |
+| 회전 거부 표시 | `ViewRotator._rejectedIndicator` | 회색 큐브 X | 표시 오브젝트 교체 | | |
 | 코요테 타임 | `MovementSettings._coyoteSeconds` | 0.08초 | 0.05~0.12초 | | |
 | 낙하 리셋 높이 | `PuzzleMovement.ResetHeight` | y < −3 | − | | |
 | 디더 내부 해상도 | `DitherSettings._internalResolution` | 480×270 px | 가로 320~640 px, 세로 180~360 px | | |

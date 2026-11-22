@@ -66,6 +66,60 @@ z1: ..M");
             Assert.That(movement.Feet, Is.EqualTo(new Vector3Int(1, 1, 1)));
         }
 
+        [Test]
+        public void ApplyRotation_ClearView_UsesReprojectedFeetAndMap()
+        {
+            var movement = CreateRotationFixture();
+            var turn = movement.PreviewRotation(ViewDirection.Degrees90);
+
+            movement.ApplyRotation(turn, Tuning.Gravity);
+
+            Assert.That(movement.Direction, Is.EqualTo(ViewDirection.Degrees90));
+            Assert.That(movement.Feet, Is.EqualTo(new Vector3Int(4, 1, 1)));
+            Assert.That(movement.IsGrounded, Is.True);
+        }
+
+        [Test]
+        public void ApplyRotation_BlockedView_KeepsPreviousFeetAndMap()
+        {
+            var movement = CreateRotationFixture();
+            movement.Tick(0.25f, -1f, false, Tuning);
+            var before = movement.Position;
+            var turn = movement.PreviewRotation(ViewDirection.Degrees90);
+
+            movement.ApplyRotation(turn, Tuning.Gravity);
+
+            Assert.That(turn.Outcome, Is.EqualTo(RotationOutcome.RejectedBlocked));
+            Assert.That(movement.Direction, Is.EqualTo(ViewDirection.Degrees0));
+            Assert.That(movement.Position, Is.EqualTo(before));
+        }
+
+        [Test]
+        public void Reset_AfterTurn_RestoresStartViewAndFeet()
+        {
+            var movement = CreateRotationFixture();
+            movement.ApplyRotation(movement.PreviewRotation(ViewDirection.Degrees90), Tuning.Gravity);
+            movement.Tick(0.25f, -1f, false, Tuning);
+
+            movement.Reset();
+
+            Assert.That(movement.Direction, Is.EqualTo(ViewDirection.Degrees0));
+            Assert.That(movement.Feet, Is.EqualTo(new Vector3Int(3, 1, 1)));
+        }
+
+        private static PlayerMovement CreateRotationFixture() => new(ZoneParser.Parse(@"name: rotation
+teaches: rotation
+intent: turn at start and reject near the wall
+size: 5 2 2
+rotations: 0-0
+start-view: 0
+y=0
+z0: ###.#
+z1: ..###
+y=1
+z0: ....#
+z1: ...SM"));
+
         private static PlayerMovement StartAtEdge()
         {
             var zone = ZoneParser.Parse(@"name: coyote
