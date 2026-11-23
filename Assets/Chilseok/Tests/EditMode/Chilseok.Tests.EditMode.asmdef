@@ -3,6 +3,7 @@
     "rootNamespace": "Chilseok.Tests.EditMode",
     "references": [
         "Chilseok.Runtime",
+        "Chilseok.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
