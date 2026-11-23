@@ -189,6 +189,14 @@ namespace Chilseok.EditorTools
         internal static void AddRotationPreview(GameObject player, Transform pivot, Material gray)
         {
             var camera = pivot.GetComponentInChildren<Camera>();
+            var fillObject = CreateObject("Rotation Fill Light", camera.transform);
+            fillObject.transform.localRotation = Quaternion.Euler(22f, -15f, 0f);
+            var fill = Undo.AddComponent<Light>(fillObject);
+            fill.type = LightType.Directional;
+            // 회전해도 정면에 빛을 줘 큐브와 배경이 같은 먹색으로 합쳐지는 것을 막는다.
+            fill.intensity = 2.1f;
+            fill.shadows = LightShadows.None;
+
             var marker = CreateObject("Rotation Rejected", camera.transform);
             marker.transform.localPosition = new Vector3(0f, 2.8f, 4f);
             var scale = new Vector3(0.75f, 0.12f, 0.12f);

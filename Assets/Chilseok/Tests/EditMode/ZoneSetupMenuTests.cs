@@ -88,6 +88,20 @@ namespace Chilseok.Tests.EditMode
         }
 
         [Test]
+        public void Build_RotationPreview_CreatesCameraFillLight()
+        {
+            var layout = AssetDatabase.LoadAssetAtPath<TextAsset>(LayoutPath);
+
+            var preview = ZoneSetupMenu.Build(layout);
+            var camera = preview.GetComponentInChildren<Camera>();
+            var fill = camera.GetComponentInChildren<Light>();
+
+            Assert.That(fill, Is.Not.Null);
+            Assert.That(fill.type, Is.EqualTo(LightType.Directional));
+            Assert.That(fill.enabled, Is.True);
+        }
+
+        [Test]
         public void Build_Rebuild_ReplacesOnlyTheGeneratedRoot()
         {
             var layout = AssetDatabase.LoadAssetAtPath<TextAsset>(LayoutPath);
