@@ -1,0 +1,14 @@
+name: 떠 있는 바위섬 · 한 번 건너기
+teaches: 걷다가 한 칸 틈을 점프로 건넌다
+size: 8 2 2
+rotations: 0-0
+start-view: 0
+intent: 오른쪽으로 걸어 x2에 닿고 x3의 한 칸 틈을 뛰어 x4에 착지한 뒤 바위섬을 따라 까치에 닿는다
+feather-views: 5 1 1 = 0
+
+y=0
+z0: ###.#.##
+z1: ##...##.
+y=1
+z0: #SF.F..M
+z1: #....F..
