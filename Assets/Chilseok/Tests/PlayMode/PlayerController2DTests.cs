@@ -66,6 +66,18 @@ namespace Chilseok.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Jump_WhileWalkingRight_StaysInDirection()
+        {
+            return JumpFromPartialWalk(Key.D, 1);
+        }
+
+        [UnityTest]
+        public IEnumerator Jump_WhileWalkingLeft_StaysInDirection()
+        {
+            return JumpFromPartialWalk(Key.A, -1);
+        }
+
+        [UnityTest]
         public IEnumerator ResetPressed_AfterWalking_ReturnsToStartingCell()
         {
             var controller = CreatePlayer("######", ".S...M", "......", "......", false);
@@ -95,6 +107,33 @@ namespace Chilseok.Tests.PlayMode
 
             Assert.That(controller.IsGrounded, Is.True);
             Assert.That(controller.Feet, Is.EqualTo(expected));
+        }
+
+        private IEnumerator JumpFromPartialWalk(Key key, int direction)
+        {
+            var controller = CreatePlayer("######", "..S..M", "......", "......", false);
+            InputSystem.QueueStateEvent(_keyboard, new KeyboardState(key));
+            for (var frame = 0; frame < 6; frame++)
+                yield return null;
+            Assert.That(controller.Feet.x, Is.EqualTo(2));
+            var takeoff = controller.transform.localPosition.x;
+
+            InputSystem.QueueStateEvent(_keyboard, new KeyboardState(key, Key.Space));
+            yield return null;
+            Assert.That(controller.IsGrounded, Is.False);
+            Assert.That((controller.transform.localPosition.x - takeoff) * direction, Is.GreaterThan(0f));
+            InputSystem.QueueStateEvent(_keyboard, default(KeyboardState));
+
+            for (var frame = 0; frame < 120 && !controller.IsGrounded; frame++)
+            {
+                var before = controller.transform.localPosition.x;
+                yield return null;
+                Assert.That((controller.transform.localPosition.x - before) * direction,
+                    Is.GreaterThanOrEqualTo(-0.0001f));
+            }
+
+            Assert.That(controller.IsGrounded, Is.True);
+            Assert.That(controller.Feet.x, Is.EqualTo(2 + direction));
         }
 
         private PlayerController2D CreatePlayer(string floor, string first, string second, string third,

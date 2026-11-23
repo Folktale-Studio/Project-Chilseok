@@ -4,6 +4,9 @@ namespace Chilseok.Puzzle
 {
     public sealed class PlayerMovement
     {
+        public const float BodyWidth = 0.6f;
+        private const float WallSeparation = (PuzzleMovement.BlockWidth + BodyWidth) * 0.5f;
+
         public readonly struct Tuning
         {
             public readonly float MoveSpeed;
@@ -39,13 +42,15 @@ namespace Chilseok.Puzzle
         private float _upSpeed;
         private float _gravity;
         private float _jumpDistance;
+        private float _clearanceTime;
+        private float _clearanceProgress;
         private bool _canUseCoyote;
 
         public Vector3Int Feet { get; private set; }
         public Vector3 Position { get; private set; }
         public ViewDirection Direction => _map.Direction;
         public bool IsGrounded => _motion is Motion.Grounded or Motion.Walking;
-        internal bool IsAtRestOnSupport => _motion == Motion.Grounded;
+        internal bool IsAtRestOnSupport => _motion == Motion.Grounded && Position == (Vector3)Feet;
         internal Vector3Int Size { get; }
         internal ViewDirection StartView => _startView;
 
@@ -93,7 +98,7 @@ namespace Chilseok.Puzzle
                 return new RotationResult(RotationOutcome.RejectedInAir, Direction, feet);
 
             // 칸 사이에서 돌 때는 현재 화면 위치에 더 가까운 발 칸을 기준으로 삼는다.
-            if (_motion == Motion.Walking && _progress >= 0.5f &&
+            if (HasCrossedCellBoundary() &&
                 !Reprojector.TryUpdateDepth(_map, _target, out feet))
             {
                 return new RotationResult(RotationOutcome.RejectedInAir, Direction, Feet);
@@ -128,15 +133,7 @@ namespace Chilseok.Puzzle
             switch (_motion)
             {
                 case Motion.Grounded:
-                    if (PuzzleMovement.TryWalk(_map, Feet, direction, out var adjacent))
-                    {
-                        _target = adjacent;
-                        _origin = Position;
-                        _landing = KeepDepth(adjacent, Feet);
-                        _progress = 0f;
-                        _motion = Motion.Walking;
-                        Walk(dt, horizontal * tuning.MoveSpeed, tuning.Gravity);
-                    }
+                    MoveOnGround(dt, horizontal * tuning.MoveSpeed, direction, tuning.Gravity);
                     break;
                 case Motion.Walking:
                     Walk(dt, horizontal * tuning.MoveSpeed, tuning.Gravity);
@@ -150,10 +147,33 @@ namespace Chilseok.Puzzle
             }
         }
 
+        private void MoveOnGround(float dt, float speed, int direction, float gravity)
+        {
+            if (direction == 0)
+                return;
+
+            if (PuzzleMovement.TryWalk(_map, Feet, direction, out var adjacent))
+            {
+                _target = adjacent;
+                _origin = Position;
+                _landing = KeepDepth(adjacent, Feet);
+                _progress = 0f;
+                _motion = Motion.Walking;
+                Walk(dt, speed, gravity);
+                return;
+            }
+
+            // 벽 앞에서는 같은 발 칸 안에서 몸체와 벽면이 만나는 지점까지 걷는다.
+            var offset = PuzzleMovement.IsWallAhead(_map, Feet, direction) ? direction * (1f - WallSeparation) : 0f;
+            if ((offset - ScreenOffset(Feet)) * direction > 0f)
+                Position = Vector3.MoveTowards(Position, (Vector3)Feet + ScreenRight * offset, Mathf.Abs(speed) * dt);
+        }
+
         private void Walk(float dt, float speed, float gravity)
         {
             var direction = _map.Project(_target).x - _map.Project(Feet).x;
-            _progress = Mathf.Clamp01(_progress + speed * direction * dt);
+            var distance = Mathf.Abs(Vector3.Dot(_landing - _origin, ScreenRight));
+            _progress = Mathf.Clamp01(_progress + speed * direction * dt / distance);
             Position = Vector3.Lerp(_origin, _landing, _progress);
             if (_progress == 0f)
             {
@@ -171,27 +191,66 @@ namespace Chilseok.Puzzle
         private void TryJump(int direction, Tuning tuning)
         {
             var anchor = IsGrounded ? Feet : _lastGroundedFeet;
+            var fallback = Feet;
+            if (HasCrossedCellBoundary())
+            {
+                fallback = _target;
+                if (Reprojector.TryUpdateDepth(_map, _target, out var support))
+                    anchor = support;
+            }
+
             if (_map.IsSolid(_map.Project(anchor) + Vector2Int.up))
                 return;
 
             // 착지 후보는 솔버와 동일하다. 점프 수치는 포물선의 움직임을 조절한다.
-            if ((!IsGrounded || !PuzzleMovement.TryStepUp(_map, anchor, direction, out _target)) &&
-                !PuzzleMovement.TryJumpGap(_map, anchor, direction, out _target))
+            var takeoff = IsGrounded ? Feet : anchor;
+            if ((IsGrounded && PuzzleMovement.TryStepUp(_map, anchor, direction, out var target)) ||
+                PuzzleMovement.TryJumpGap(_map, anchor, direction, out target))
             {
-                _target = Feet;
+                _target = target;
+                _landing = KeepDepth(target, takeoff);
+            }
+            else
+            {
+                PickFlatLanding(anchor, takeoff, fallback, direction);
             }
 
-            var takeoff = IsGrounded ? Feet : anchor;
             _origin = Position;
-            _landing = KeepDepth(_target, takeoff);
             _airTime = 0f;
             _gravity = tuning.Gravity;
             _jumpDistance = tuning.JumpDistance;
             _upSpeed = Mathf.Sqrt(2f * _gravity * tuning.JumpHeight);
             var heightChange = _landing.y - _origin.y;
-            _duration = (_upSpeed + Mathf.Sqrt(_upSpeed * _upSpeed - 2f * _gravity * heightChange)) / _gravity;
+            var landingSpeed = Mathf.Sqrt(_upSpeed * _upSpeed - 2f * _gravity * heightChange);
+            _duration = (_upSpeed + landingSpeed) / _gravity;
+            _clearanceTime = heightChange > 0f ? (_upSpeed - landingSpeed) / _gravity : 0f;
+            var horizontalDistance = Mathf.Abs(Vector3.Dot(_landing - _origin, ScreenRight));
+            _clearanceProgress = horizontalDistance > WallSeparation
+                ? 1f - WallSeparation / horizontalDistance
+                : 0f;
             _motion = Motion.Jumping;
             _canUseCoyote = false;
+        }
+
+        private void PickFlatLanding(Vector3Int anchor, Vector3Int takeoff, Vector3Int fallback, int direction)
+        {
+            _target = fallback;
+            _landing = new Vector3(Position.x, fallback.y, Position.z);
+            if (!IsGrounded || direction == 0)
+                return;
+
+            if (ScreenOffset(anchor) * direction < 0f)
+            {
+                _target = anchor;
+                _landing = KeepDepth(anchor, takeoff);
+            }
+            else if (PuzzleMovement.TryWalk(_map, anchor, direction, out var adjacent) &&
+                !_map.IsSolid(_map.Project(adjacent) + Vector2Int.up) &&
+                Reprojector.TryUpdateDepth(_map, adjacent, out var supported))
+            {
+                _target = supported;
+                _landing = KeepDepth(supported, takeoff);
+            }
         }
 
         private void Jump(float dt)
@@ -200,27 +259,33 @@ namespace Chilseok.Puzzle
             if (_airTime >= _duration)
             {
                 if (Reprojector.TryUpdateDepth(_map, _target, out var grounded))
-                    GroundAt(grounded);
+                    GroundAt(grounded, Vector3.Dot(_landing - (Vector3)_target, ScreenRight));
                 else
                     BeginFall(_target, _gravity, canUseCoyote: false);
                 return;
             }
 
-            var t = _airTime / _duration;
-            var approach = t + (_jumpDistance - 2f) * t * (1f - t);
+            var approach = JumpProgress();
             var y = _origin.y + _upSpeed * _airTime - _gravity * _airTime * _airTime * 0.5f;
-            if (_origin.y < _landing.y && y < _landing.y)
-            {
-                // 상승 중에는 몸이 발판 높이에 닿기 전까지 발판 옆면을 통과하지 않는다.
-                var distance = new Vector2(_landing.x - _origin.x, _landing.z - _origin.z).magnitude;
-                if (distance > 0.5f)
-                    approach = Mathf.Min(approach, 1f - 0.5f / distance);
-                else
-                    approach = 0f;
-            }
             Position = Vector3.Lerp(_origin, _landing, approach);
             Position = new Vector3(Position.x, y, Position.z);
         }
+
+        private float JumpProgress()
+        {
+            if (_clearanceTime <= 0f)
+                return ShapeJump(_airTime / _duration);
+
+            // 발판 높이에 도달하는 순간 벽 앞 경로와 착지 경로를 끊김 없이 잇는다.
+            if (_airTime < _clearanceTime)
+                return _clearanceProgress * ShapeJump(_airTime / _clearanceTime);
+
+            var progress = (_airTime - _clearanceTime) / (_duration - _clearanceTime);
+            return Mathf.Lerp(_clearanceProgress, 1f, ShapeJump(progress));
+        }
+
+        private float ShapeJump(float progress) =>
+            progress + (_jumpDistance - 2f) * progress * (1f - progress);
 
         private void BeginFall(Vector3Int from, float gravity, bool canUseCoyote)
         {
@@ -255,14 +320,26 @@ namespace Chilseok.Puzzle
             }
         }
 
-        private void GroundAt(Vector3Int feet)
+        private void GroundAt(Vector3Int feet, float screenOffset = 0f)
         {
             Feet = feet;
-            Position = feet;
+            Position = (Vector3)feet + ScreenRight * screenOffset;
             _lastGroundedFeet = feet;
             _motion = Motion.Grounded;
             _canUseCoyote = false;
         }
+
+        private bool HasCrossedCellBoundary() => _motion == Motion.Walking && Mathf.Abs(ScreenOffset(Feet)) >= 0.5f;
+
+        private float ScreenOffset(Vector3Int feet) => Vector3.Dot(Position - (Vector3)feet, ScreenRight);
+
+        private Vector3 ScreenRight => Direction switch
+        {
+            ViewDirection.Degrees0 => Vector3.right,
+            ViewDirection.Degrees90 => Vector3.forward,
+            ViewDirection.Degrees180 => Vector3.left,
+            _ => Vector3.back
+        };
 
         private Vector3 KeepDepth(Vector3Int destination, Vector3Int depth) => Direction switch
         {

@@ -128,7 +128,8 @@ namespace Chilseok.EditorTools
                 var cell = new Vector3Int(x, y, z);
                 var position = origin + cell;
                 if (zone.IsSolid(cell) && (drawn == null || drawn.Add(position)))
-                    AddCube(blocks, $"Block {x},{y},{z}", position + Vector3.up * 0.5f, Vector3.one * 0.97f, gray);
+                    AddCube(blocks, $"Block {x},{y},{z}", position + Vector3.up * 0.5f,
+                        Vector3.one * PuzzleMovement.BlockWidth, gray);
             }
         }
 
@@ -180,7 +181,8 @@ namespace Chilseok.EditorTools
             data.FindProperty("_zoneData").objectReferenceValue = layout;
             data.FindProperty("_settings").objectReferenceValue = settings;
             data.ApplyModifiedProperties();
-            AddCube(player.transform, "Body", Vector3.up * 0.5f, new Vector3(0.6f, 1f, 0.6f), gray);
+            AddCube(player.transform, "Body", Vector3.up * 0.5f,
+                new Vector3(PlayerMovement.BodyWidth, 1f, PlayerMovement.BodyWidth), gray);
             return player;
         }
 

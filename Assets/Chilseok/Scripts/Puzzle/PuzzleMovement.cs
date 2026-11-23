@@ -5,6 +5,10 @@ namespace Chilseok.Puzzle
     public static class PuzzleMovement
     {
         internal const int ResetHeight = -3;
+        public const float BlockWidth = 0.97f;
+
+        internal static bool IsWallAhead(ProjectionMap map, Vector3Int feet, int direction) =>
+            TryGetAdjacent(map, feet, direction, out var adjacent) && map.IsSolid(map.Project(adjacent));
 
         public static bool TryWalk(ProjectionMap map, Vector3Int feet, int direction, out Vector3Int next)
         {
